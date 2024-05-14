@@ -6,7 +6,7 @@ import numpy as np
 import re
 from random import randint, uniform
 
-class CoordinateSystemApp:
+class Koordinaatiosysteemi:
     def __init__(self, parent):
         self.parent = parent
         self.frame = ttk.Frame(parent)
@@ -49,7 +49,7 @@ class CoordinateSystemApp:
         except Exception as e:
             print(f"Error: {e}")
 
-class SpaceJourney:
+class Avaruusmatka:
     def __init__(self, parent):
         self.parent = parent
         self.frame = ttk.Frame(parent)
@@ -128,7 +128,7 @@ class SpaceJourney:
     def launch_rocket(self, pair):
         ernesti_rocket, kernesti_rocket = pair
         if randint(0, 99) < 1:
-            messagebox.showerror("Launch Failure", "Rocket launch failed! Program terminated.")
+            messagebox.showerror("Lähtö epäonnistui!", "Raketin lähtö epäonnistui!")
             self.parent.destroy()
         else:
             self.move_rocket(pair, ernesti_rocket, "Ernesti", uniform(self.min_rocket_speed, self.max_rocket_speed))
@@ -179,21 +179,225 @@ class SpaceJourney:
         elif name == "Kernesti":
             print("Kernesti saapui kuuhun onnistuneesti!")
 
+class Matriisilaskin:
+    def __init__(self, root):
+        self.root = root
+
+        tk.Label(root, text="Matriisi 1 (rivit x sarakkeet):").grid(row=0, column=0, padx=10, pady=5)
+        self.rows1_entry = tk.Entry(root, width=5)
+        self.rows1_entry.insert(0, "2")
+        self.rows1_entry.grid(row=0, column=1, padx=5, pady=5)
+        self.cols1_entry = tk.Entry(root, width=5)
+        self.cols1_entry.insert(0, "3")
+        self.cols1_entry.grid(row=0, column=2, padx=5, pady=5)
+
+        tk.Label(root, text="Matriisi 2 (rivit x sarakkeet):").grid(row=1, column=0, padx=10, pady=5)
+        self.rows2_entry = tk.Entry(root, width=5)
+        self.rows2_entry.insert(0, "2")
+        self.rows2_entry.grid(row=1, column=1, padx=5, pady=5)
+        self.cols2_entry = tk.Entry(root, width=5)
+        self.cols2_entry.insert(0, "3")
+        self.cols2_entry.grid(row=1, column=2, padx=5, pady=5)
+
+        self.matrix1_text = tk.Text(root, height=5, width=30)
+        self.matrix1_text.insert(tk.END, "1 2 3\n4 5 6")
+        self.matrix1_text.grid(row=2, column=0, columnspan=3, padx=10, pady=5)
+
+        self.matrix2_text = tk.Text(root, height=5, width=30)
+        self.matrix2_text.insert(tk.END, "7 8 9\n10 11 12")
+        self.matrix2_text.grid(row=3, column=0, columnspan=3, padx=10, pady=5)
+
+        self.add_button = tk.Button(root, text="Lisää", command=self.perform_addition)
+        self.add_button.grid(row=4, column=0, padx=10, pady=5)
+
+        self.subtract_button = tk.Button(root, text="Vähennä", command=self.perform_subtraction)
+        self.subtract_button.grid(row=4, column=1, padx=10, pady=5)
+
+        self.multiply_button = tk.Button(root, text="Kerro", command=self.perform_multiplication)
+        self.multiply_button.grid(row=4, column=2, padx=10, pady=5)
+
+    def get_matrix_from_text(self, text_widget, rows, cols):
+        """Hae matriisin elementit tekstilaatikosta."""
+        matrix_elements = []
+        try:
+            lines = text_widget.get("1.0", tk.END).strip().split("\n")
+            for line in lines:
+                row_elements = [float(x) for x in line.strip().split()]
+                if len(row_elements) != cols:
+                    messagebox.showerror("Virhe", f"Jokaisessa rivissä tulee olla {cols} elementtiä.")
+                    return None
+                matrix_elements.append(row_elements)
+            if len(matrix_elements) != rows:
+                messagebox.showerror("Virhe", f"Matriisin tulee olla {rows}x{cols}.")
+                return None
+            return np.array(matrix_elements)
+        except ValueError:
+            messagebox.showerror("Virhe", "Virheellisiä matriisin elementtejä. Syötä numeerisia arvoja.")
+            return None
+
+    def perform_addition(self):
+        rows1 = int(self.rows1_entry.get())
+        cols1 = int(self.cols1_entry.get())
+        matrix1 = self.get_matrix_from_text(self.matrix1_text, rows1, cols1)
+
+        rows2 = int(self.rows2_entry.get())
+        cols2 = int(self.cols2_entry.get())
+        matrix2 = self.get_matrix_from_text(self.matrix2_text, rows2, cols2)
+
+        if matrix1 is not None and matrix2 is not None:
+            if matrix1.shape == matrix2.shape:
+                result = np.add(matrix1, matrix2)
+                messagebox.showinfo("Tulos", f"Lisäyksen tulos:\n{result}")
+            else:
+                messagebox.showerror("Virhe", "Matriisien ulottuvuuksien tulee olla samat lisäystä varten.")
+
+    def perform_subtraction(self):
+        rows1 = int(self.rows1_entry.get())
+        cols1 = int(self.cols1_entry.get())
+        matrix1 = self.get_matrix_from_text(self.matrix1_text, rows1, cols1)
+
+        rows2 = int(self.rows2_entry.get())
+        cols2 = int(self.cols2_entry.get())
+        matrix2 = self.get_matrix_from_text(self.matrix2_text, rows2, cols2)
+
+        if matrix1 is not None and matrix2 is not None:
+            if matrix1.shape == matrix2.shape:
+                result = np.subtract(matrix1, matrix2)
+                messagebox.showinfo("Tulos", f"Vähennyksen tulos:\n{result}")
+            else:
+                messagebox.showerror("Virhe", "Matriisien ulottuvuuksien tulee olla samat vähennystä varten.")
+
+    def perform_multiplication(self):
+        rows1 = int(self.rows1_entry.get())
+        cols1 = int(self.cols1_entry.get())
+        matrix1 = self.get_matrix_from_text(self.matrix1_text, rows1, cols1)
+
+        rows2 = int(self.rows2_entry.get())
+        cols2 = int(self.cols2_entry.get())
+        matrix2 = self.get_matrix_from_text(self.matrix2_text, rows2, cols2)
+
+        if matrix1 is not None and matrix2 is not None:
+            if matrix1.shape[1] == matrix2.shape[0]:
+                result = np.dot(matrix1, matrix2)
+                messagebox.showinfo("Tulos", f"Kertolaskun tulos:\n{result}")
+            else:
+                messagebox.showerror("Virhe", "Matriisin 1 sarakkeiden tulee olla samat kuin matriisin 2 rivit kertolaskua varten.")
+
+class Kuutio:
+    def __init__(self, parent):
+        self.parent = parent
+        self.frame = ttk.Frame(parent)
+        self.frame.pack(fill=tk.BOTH, expand=True)
+
+        self.fig = Figure(figsize=(5, 5))
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        sliders_frame = ttk.Frame(self.frame)
+        sliders_frame.pack(side=tk.TOP, pady=10)
+
+        self.create_slider(sliders_frame, "X")
+        self.create_slider(sliders_frame, "Y")
+        self.create_slider(sliders_frame, "Z")
+
+        self.angle_x = 0
+        self.angle_y = 0
+        self.angle_z = 0
+
+        self.update_plot()
+
+    def create_slider(self, parent, text):
+        label = ttk.Label(parent, text=text)
+        label.pack(side=tk.LEFT, padx=10)
+
+        scale = ttk.Scale(parent, from_=-180, to=180, length=100,
+        command=self.update_plot, orient=tk.HORIZONTAL)
+        scale.pack(side=tk.LEFT, padx=10)
+
+        if text == "X":
+            self.angle_x_slider = scale
+        elif text == "Y":
+            self.angle_y_slider = scale
+        elif text == "Z":
+            self.angle_z_slider = scale
+
+    def update_plot(self, event=None):
+        self.angle_x = np.radians(self.angle_x_slider.get())
+        self.angle_y = np.radians(self.angle_y_slider.get())
+        self.angle_z = np.radians(self.angle_z_slider.get())
+
+        self.ax.clear()
+        self.ax.set_xlim([-2, 2])
+        self.ax.set_ylim([-2, 2])
+        self.ax.set_zlim([-2, 2])
+
+        vertices = np.array([
+            [-1, -1, -1],
+            [1, -1, -1],
+            [1, 1, -1],
+            [-1, 1, -1],
+            [-1, -1, 1],
+            [1, -1, 1],
+            [1, 1, 1],
+            [-1, 1, 1]
+        ])
+
+        edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+            [4, 5], [5, 6], [6, 7], [7, 4],
+            [0, 4], [1, 5], [2, 6], [3, 7]
+        ]
+
+        rot_x = np.array([
+            [1, 0, 0],
+            [0, np.cos(self.angle_x), -np.sin(self.angle_x)],
+            [0, np.sin(self.angle_x), np.cos(self.angle_x)]
+        ])
+        rot_y = np.array([
+            [np.cos(self.angle_y), 0, np.sin(self.angle_y)],
+            [0, 1, 0],
+            [-np.sin(self.angle_y), 0, np.cos(self.angle_y)]
+        ])
+        rot_z = np.array([
+            [np.cos(self.angle_z), -np.sin(self.angle_z), 0],
+            [np.sin(self.angle_z), np.cos(self.angle_z), 0],
+            [0, 0, 1]
+        ])
+
+        rotated_vertices = vertices.dot(rot_x).dot(rot_y).dot(rot_z)
+
+        for edge in edges:
+            self.ax.plot3D(
+                [rotated_vertices[edge[0], 0], rotated_vertices[edge[1], 0]],
+                [rotated_vertices[edge[0], 1], rotated_vertices[edge[1], 1]],
+                [rotated_vertices[edge[0], 2], rotated_vertices[edge[1], 2]],
+                'b'
+            )
+
+        self.canvas.draw()
+
 def main():
     root = tk.Tk()
-    root.title("Tkinter tabs")
+    root.title("test")
 
     notebook = ttk.Notebook(root)
     notebook.pack(fill=tk.BOTH, expand=True)
 
-    coordinate_system_frame = ttk.Frame(notebook)
-    space_journey_frame = ttk.Frame(notebook)
+    koordinaatio_system_frame = ttk.Frame(notebook)
+    avaruus_journey_frame = ttk.Frame(notebook)
+    matriisi_system_frame = ttk.Frame(notebook)
+    kuutio_system_frame = ttk.Frame(notebook)
 
-    notebook.add(coordinate_system_frame, text='Koordinaatio')
-    notebook.add(space_journey_frame, text='Avaruusmatka')
+    notebook.add(koordinaatio_system_frame, text='Koordinaatio')
+    notebook.add(avaruus_journey_frame, text='Avaruusmatka')
+    notebook.add(matriisi_system_frame, text='Matriisilaskin')
+    notebook.add(kuutio_system_frame, text='3DKuutio')
 
-    coordinate_system_app = CoordinateSystemApp(coordinate_system_frame)
-    space_journey_app = SpaceJourney(space_journey_frame)
+    koordinaatio_system_app = Koordinaatiosysteemi(koordinaatio_system_frame)
+    avaruus_journey_app = Avaruusmatka(avaruus_journey_frame)
+    matriisi_calculator_app = Matriisilaskin(matriisi_system_frame)
+    kuutio_rotation_app = Kuutio(kuutio_system_frame)
 
     root.mainloop()
 
